@@ -1,9 +1,9 @@
-name: "Terraform Action"
+name: "Terraform Deploy"
 
 on:
   push:
     branches:
-      - main  # هماهنگ با برنچ تو
+      - main
 
 jobs:
   terraform:
@@ -15,20 +15,20 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform  # ورود به پوشه فایل‌های اصلی
+        working-directory: ./terraform
 
       - name: Terraform Plan
         run: terraform plan
         working-directory: ./terraform
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
         working-directory: ./terraform
