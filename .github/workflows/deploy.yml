@@ -1,4 +1,4 @@
-name: "Terraform Deploy"
+name: "Terraform & Docker Deploy"
 on:
   push:
     branches:
@@ -13,10 +13,22 @@ jobs:
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
     steps:
       - uses: actions/checkout@v3
+
       - uses: hashicorp/setup-terraform@v2
       - run: terraform init
         working-directory: ./terraform
-      - run: terraform plan
-        working-directory: ./terraform
       - run: terraform apply -auto-approve
         working-directory: ./terraform
+
+      # --- بخش جدید: آپلود کردن کد در انبار اژور ---
+      - name: Azure Container Registry Login
+        uses: Azure/docker-login@v1
+        with:
+          login-server: productionacr001.azurecr.io
+          username: ${{ secrets.AZURE_CLIENT_ID }}
+          password: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t productionacr001.azurecr.io/web-app:latest .
+          docker push productionacr001.azurecr.io/web-app:latest
